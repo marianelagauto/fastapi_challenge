@@ -47,7 +47,7 @@ def update_client(client_id:int, data:schemas.Client, db:Session=Depends(get_db)
 
 
 @app.delete('/clients/{client_id}', response_model=schemas.Response)
-def delete_client(client_id:int, data:schemas.Client, db:Session=Depends(get_db)):
+def delete_client(client_id:int, db:Session=Depends(get_db)):
     client = db.query(models.Client).filter_by(id=client_id).first()
     db.delete(client)
     db.commit()
