@@ -31,7 +31,7 @@ app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
 
-def test_create_client():
+def test_create_client_ok():
     response = client.post("/clients/",
                            json={
                                "id": 1,
@@ -41,10 +41,26 @@ def test_create_client():
     assert "Deivid" in response.json().values()
 
 
-def test_get_client():
+def test_create_client_failed():
+    response = client.post("/clients/",
+                           json={
+                               "id": 1,
+                               "name": 513465
+                           })
+    assert response.status_code == 400
+    assert response.json()['detail'] == "Solo puede ingresar caracteres alfabéticos"
+
+
+def test_get_client_ok():
     response = client.get("/clients/1")
     assert response.status_code == 200
     assert response.json() == {"id": 1, "name": "Deivid"}
+
+
+def test_get_client_failed():
+    response = client.get("/clients/16")
+    assert response.status_code == 404
+    assert response.json()['detail'] == "El cliente no existe"
 
 
 def test_list_clients():
@@ -58,9 +74,14 @@ def test_list_clients():
     assert len(response.json()) == 2
 
 
-def test_delete_client():
+def test_delete_client_ok():
     response = client.delete("/clients/1")
     assert response.status_code == 200
+
+
+def test_delete_client_failed():
+    response = client.delete("/clients/100")
+    assert response.status_code == 404
 
 
 def test_create_movement_ok():
@@ -77,21 +98,21 @@ def test_create_movement_ok():
                                "client_id": 2,
                                "details": [
                                    {
-                                       "amount": 12.4,
+                                       "amount": 12,
                                        "type": "ingreso"
                                    },
                                    {
-                                       "amount": 2.7,
+                                       "amount": 2,
                                        "type": "egreso"
                                    }
                                ]
                            })
     assert response.status_code == 200
-    assert response.json()['details'] == [{'amount': 12.4, 'type': 'ingreso'}, {
-        'amount': 2.7, 'type': 'egreso'}]
+    assert response.json()['details'] == [{'amount': 12, 'type': 'ingreso'}, {
+        'amount': 2, 'type': 'egreso'}]
 
 
-def test_create_movement_with_error():
+def test_create_movement_failed():
     response = client.post("/movements/",
                            json={
                                "date": "2022-04-01T01:23:20.189Z",
@@ -115,17 +136,22 @@ def test_get_movement():
     response = client.get("/movements/1")
     assert response.status_code == 200
     assert response.json()['details'] == [
-        {'amount': 12.4, 'type': 'ingreso'}, 
-        {'amount': 2.7, 'type': 'egreso'}]
-
-
-def test_get_amount_available():
-    response = client.get("/get-amount/2")
-    assert response.status_code == 200
-    assert response.json() == {'amount_available': 21.7}
+        {'amount': 12, 'type': 'ingreso'}, 
+        {'amount': 2, 'type': 'egreso'}]
+    assert response.json()['get_total'] == 14.0
 
 
 def test_delete_movement():
     response = client.delete("/movements/1")
     assert response.status_code == 200
-    # chequear monto de la cuenta
+
+    response = client.get("/accounts/2")
+    assert response.status_code == 200
+    assert response.json()['amount_available'] == 12
+
+
+def test_get_account():
+    response = client.get("/accounts/2")
+    assert response.status_code == 200
+    assert response.json()['amount_available'] == 12.0
+    assert response.json()['get_total_usd'] == 2352.0

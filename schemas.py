@@ -19,8 +19,9 @@ class Account(BaseModel):
         orm_mode = True
 
 
-class Amount(BaseModel):
+class GetAccount(BaseModel):
     amount_available: float
+    get_total_usd: float
 
     class Config:
         orm_mode = True
@@ -52,6 +53,17 @@ class MovementDetail(BaseModel):
     movement: int
     amount: float
     type: str
+
+    class Config:
+        orm_mode = True
+
+
+class GetMovement(BaseModel):
+    id: Optional[int]
+    date: datetime
+    client_id: int
+    details: List[CreateMovementDetail]
+    get_total: float
 
     class Config:
         orm_mode = True
