@@ -42,7 +42,7 @@ class Account(Base):
         if response.status_code == 200:
             value = response.json()[1]['casa']['compra']
             dolar_value = value.replace(",", ".")
-            return self.amount_available * float(dolar_value)
+            return round(self.amount_available / float(dolar_value), 2)
         return 0
 
 
@@ -66,3 +66,9 @@ class MovementDetail(Base):
     movement = relationship(Movement, backref=backref("details", cascade="all,delete"))
     amount = Column(Float)
     type = Column(String(10))
+
+    @validates('type')
+    def validate_name(self, key, value):
+        if value == "ingreso" or value == "egreso":
+            return value
+        raise ValueError('El tipo de operación es incorrecto')

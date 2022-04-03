@@ -132,6 +132,26 @@ def test_create_movement_failed():
     assert response.status_code == 400
 
 
+def test_create_movement_type_failed():
+    response = client.post("/movements/",
+                           json={
+                               "date": "2022-04-01T01:23:20.189Z",
+                               "client_id": 2,
+                               "details": [
+                                   {
+                                       "amount": 1,
+                                       "type": "ingres"
+                                   },
+                                   {
+                                       "amount": 18,
+                                       "type": "egreso"
+                                   }
+                               ]
+                           })
+    assert response.json()['detail'] == "El tipo de operación es incorrecto"
+    assert response.status_code == 400
+
+
 def test_get_movement():
     response = client.get("/movements/1")
     assert response.status_code == 200
@@ -154,4 +174,4 @@ def test_get_account():
     response = client.get("/accounts/2")
     assert response.status_code == 200
     assert response.json()['amount_available'] == 12.0
-    assert response.json()['get_total_usd'] == 2352.0
+    assert response.json()['get_total_usd'] == 0.06
